@@ -11,6 +11,7 @@ import json
 import csv
 from pyquery import PyQuery as pq
 from requests import get
+import date_handler
 
 
 def format_ending(input_str):
@@ -33,9 +34,9 @@ parser = argparse.ArgumentParser(description='Process...')
 parser.add_argument('--work_dir', type=str, help='destination directory')
 parser.add_argument('--out_name', type=str, help='destination file')
 parser.add_argument('--urls', type=str, help='sourse urls, comma separated')
-parser.add_argument('--count', type=int,
-                    help='how many articles to load - optional',
-                    default=-1
+parser.add_argument('--offset', type=int,
+                    help='for how many days to load articles - optional',
+                    default=7
                    )
 args = parser.parse_args()
 
@@ -52,23 +53,18 @@ if args.out_name:
 else:
     out_name = config['out_name']
 
-if args.count > 500:
-    count = 500
-else:
-    count = args.count
 
 if not os.path.exists(work_dir):
     os.makedirs(work_dir)
 
 
-stop_id_dict = {}
-next_stop_id_dict = {}
+stored_start_str = None
 try:
-    with open(work_dir + config['stop_id_storage'], mode='r') as id_dict_file:
-        for key, val in csv.reader(id_dict_file):
-            stop_id_dict[key] = int(val)
+    with open(work_dir + config['last_run_storage'], mode='r') as last_run_file:
+        stored_start_str = last_run_file.readline()
 except OSError:
     pass
+stop = date_handler.get_stop(stored_start_str, args.offset)
 
 
 def get_articles(input_url):
@@ -126,31 +122,28 @@ def serialize_article(article_dict):
         article_dict['content']
     ])
 
+total_articles_loaded = 0
 
 with open(work_dir + out_name, mode='a') as out_file:
     for raw_url in config['urls']:
         page_number = 1
-        articles_left = count
-        stop_id = stop_id_dict.get(raw_url, 0)
+        stop_time_reached = False
 
-        limit_reached = False or articles_left == 0
-        while not limit_reached:
+        while not stop_time_reached:
             url = '{}page{}'.format(raw_url, page_number)
             print(url)
             articles = get_articles(url)
-            if page_number == 1:
-                next_stop_id_dict[raw_url] = articles[0]['id']
+
             for article in articles:
-                limit_reached = article['id'] == stop_id or articles_left == 0
-                if not limit_reached:
-                    articles_left -= 1
+                article_date = date_handler.parse_date(article['date'])
+                if stop < article_date:
                     out_file.write('{}\n'.format(serialize_article(article)))
+                    total_articles_loaded += 1
                 else:
+                    stop_time_reached = True
                     break
             page_number += 1
 
-print(next_stop_id_dict)
-with open(work_dir + config['stop_id_storage'], mode='w') as id_dict_file:
-    writer = csv.writer(id_dict_file, delimiter=',')
-    for key, value in next_stop_id_dict.items():
-        writer.writerow([key, value])
+print('loaded {} at {}'.format(total_articles_loaded, date_handler.get_next_stop()))
+with open(work_dir + config['last_run_storage'], mode='w') as last_run_file:
+    print(date_handler.get_next_stop(), file=last_run_file)

@@ -2,6 +2,6 @@
     "work_dir": "/home/me/habr/",
     "urls": ["https://habrahabr.ru/all/", "https://geektimes.ru/all/"],
     "out_name": "out.csv",
-    "stop_id_storage": "stop_id",
+    "last_run_storage": "last_run",
     "max_len": 5
 }
