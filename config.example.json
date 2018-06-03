@@ -1,6 +1,6 @@
 {
     "work_dir": "/home/me/habr/",
-    "urls": ["https://habr.com/all/", "https://geektimes.com/all/"],
+    "urls": ["https://habr.com/all/"],
     "out_name": "out.csv",
     "last_run_storage": "last_run",
     "max_len": 5
