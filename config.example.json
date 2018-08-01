@@ -3,5 +3,7 @@
     "urls": ["https://habr.com/all/"],
     "out_name": "out.csv",
     "last_run_storage": "last_run",
-    "max_len": 5
+    "max_len": 5,
+    "good_authors": "good_authors",
+    "bad_authors": "bad_authors"
 }

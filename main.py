@@ -66,6 +66,23 @@ except OSError:
     pass
 stop = date_handler.get_stop(stored_start_str, args.offset)
 
+good_authors = set()
+try:
+    with open(work_dir + config['good_authors'], mode='r') as good_file:
+        content = good_file.readlines()
+        for author in content:
+            good_authors.add(author.strip())
+except Exception:
+    pass
+
+bad_authors = set()
+try:
+    with open(work_dir + config['bad_authors'], mode='r') as bad_file:
+        content = bad_file.readlines()
+        for author in content:
+            bad_authors.add(author.strip())
+except Exception:
+    pass
 
 def get_articles(input_url):
     '''
@@ -93,11 +110,17 @@ def get_articles(input_url):
     result = []
 
     for i in range(0, len(page_urls)):
+        author = authors[i]
+        if authors[i] in bad_authors:
+            author = "'--- " + authors[i]
+        elif authors[i] in good_authors:
+            author = "@@@ " + authors[i]
+
         result.append({
             'id': int(page_urls[i].split('/')[-2]),  # a bit of hardcode
             'url': page_urls[i],
             'date': dates[i],
-            'author': authors[i],
+            'author': author,
             'title': titles[i],
             'content': contents[i]
         })
