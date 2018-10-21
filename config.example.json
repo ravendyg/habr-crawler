@@ -1,7 +1,8 @@
 {
     "work_dir": "/home/me/habr/",
-    "urls": ["https://habr.com/all/"],
-    "out_name": "out.csv",
+    "urls": [
+        "https://habr.com/all/"
+    ],
     "last_run_storage": "last_run",
     "max_len": 5,
     "good_authors": "good_authors",

@@ -9,6 +9,7 @@ import os
 import argparse
 import json
 import csv
+from datetime import date
 from pyquery import PyQuery as pq
 from requests import get
 import date_handler
@@ -51,7 +52,7 @@ else:
 if args.out_name:
     out_name = args.out_name
 else:
-    out_name = config['out_name']
+    out_name = date.today().strftime('habr-%m%d')
 
 
 if not os.path.exists(work_dir):
