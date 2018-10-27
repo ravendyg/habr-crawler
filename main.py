@@ -52,7 +52,7 @@ else:
 if args.out_name:
     out_name = args.out_name
 else:
-    out_name = date.today().strftime('habr-%m%d')
+    out_name = date.today().strftime('habr-%m%d') + '.csv'
 
 
 if not os.path.exists(work_dir):
@@ -111,17 +111,23 @@ def get_articles(input_url):
     result = []
 
     for i in range(0, len(page_urls)):
+        url_chunks = page_urls[i].split("/")
+        is_company = url_chunks[3] == 'company'
         author = authors[i]
-        if authors[i] in bad_authors:
-            author = "'--- " + authors[i]
-        elif authors[i] in good_authors:
-            author = "@@@ " + authors[i]
+        if is_company:
+            full_author = url_chunks[4] + ' / ' + author
+        else:
+            full_author = author
+        if author in bad_authors:
+            full_author = "'--- " + full_author
+        elif author in good_authors:
+            full_author = "'@@@ " + full_author
 
         result.append({
             'id': int(page_urls[i].split('/')[-2]),  # a bit of hardcode
             'url': page_urls[i],
             'date': dates[i],
-            'author': author,
+            'author': full_author,
             'title': titles[i],
             'content': contents[i]
         })
