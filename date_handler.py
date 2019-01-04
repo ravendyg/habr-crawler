@@ -46,9 +46,9 @@ def parse_date(date_str):
     elif re.match(today_regexp, dt):
         published = TODAY_START
     else:
-        day, month_str = str.split(dt.strip(), ' ')[:2]
+        day, month_str, year = str.split(dt.strip(), ' ')[:3]
         month = MONTH_DICT[month_str]
-        published = TODAY_START.replace(month=month, day=int(day))
+        published = TODAY_START.replace(year=int(year), month=month, day=int(day))
 
     return published.replace(hour=int(hour), minute=int(minute))
 
