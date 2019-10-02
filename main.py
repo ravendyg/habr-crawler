@@ -128,8 +128,8 @@ def get_articles(input_url):
             'url': page_urls[i],
             'date': dates[i],
             'author': full_author,
-            'title': titles[i],
-            'content': contents[i]
+            'title': '"{}"'.format(titles[i]),
+            'content': '"{}"'.format(contents[i])
         })
 
     return result
