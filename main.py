@@ -102,9 +102,9 @@ def get_articles(input_url):
     page_urls = [link.attrib['href'] for link in links]
     dates = [date.text_content() for date in dom('.post__time')]
     authors = [auth.text_content() for auth in dom('.user-info__nickname')]
-    titles = [link.text_content() for link in links]
+    titles = [link.text_content().replace(',', '') for link in links]
     contents = [
-        content.text_content().replace(',', '').replace('\r', ' ').replace('\n', ' ')
+        content.text_content().replace(',', '').replace('\r', ' ').replace('\n', ' ').replace('\s+', ' ').strip()
         for content in dom('.post__text')
         ]
 
