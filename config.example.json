@@ -1,7 +1,8 @@
 {
     "work_dir": "/home/me/habr/",
     "urls": [
-        "https://habr.com/all/"
+        "https://habr.com/en",
+        "https://habr.com/ru"
     ],
     "last_run_storage": "last_run",
     "max_len": 5,

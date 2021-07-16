@@ -7,8 +7,8 @@ from dateutil import parser
 from datetime import *
 import re
 
-yesterday_regexp = r'вчера'
-today_regexp = r'сегод'
+yesterday_regexp = r'(вчера|yesterday)'
+today_regexp = r'(сегод|today)'
 
 NOW = datetime.utcnow().replace(second=0, microsecond=0)
 TODAY_START = NOW.replace(hour=0, minute=0)
@@ -26,6 +26,21 @@ MONTH_DICT = {
     'октября': 10,
     'ноября': 11,
     'декабря': 12,
+    'January': 1,
+    'February': 2,
+    'March': 3,
+    'April': 4,
+    'May': 5,
+    'June': 6,
+    # Ain't a typo, they gave it this name.
+    'Jule': 7,
+    # Just in case they fix it.
+    'July': 7,
+    'August': 8,
+    'September': 9,
+    'October': 10,
+    'November': 11,
+    'December': 12,
 }
 
 def parse_date(date_str):
@@ -38,7 +53,7 @@ def parse_date(date_str):
     Returns:
         date
     '''
-    dt, tm = str.split(date_str.strip(), ' в ')[:2]
+    dt, _, tm = re.split(r'( в | at )', date_str.strip())[:3]
     hour, minute = str.split(tm.strip(), ':')
 
     if re.match(yesterday_regexp, dt):
@@ -46,9 +61,14 @@ def parse_date(date_str):
     elif re.match(today_regexp, dt):
         published = TODAY_START
     else:
-        day, month_str, year = str.split(dt.strip(), ' ')[:3]
+        day, _, month_str = str.split(dt.strip(), ' ')[:3]
         month = MONTH_DICT[month_str]
-        published = TODAY_START.replace(year=int(year), month=month, day=int(day))
+        n = datetime.now()
+        year = n.year
+        #  There is no year in the date anymore. For the last December set previous year.
+        if month == 12 and n.month == 1:
+            year -= 1
+        published = TODAY_START.replace(year=year, month=month, day=int(day))
 
     return published.replace(hour=int(hour), minute=int(minute))
 

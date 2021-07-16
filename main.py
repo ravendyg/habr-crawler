@@ -15,6 +15,17 @@ from requests import get
 import date_handler
 
 
+def clean_str(str):
+    '''
+    Remove whitespaces and line brakes
+
+    Args:
+        str: initial string
+
+    Returns: string
+    '''
+    return str.replace('\r', ' ').replace('\n', ' ').replace('\s+', ' ').strip()
+
 def format_ending(input_str):
     '''
     Makes sure that there is a trailing "/"
@@ -85,37 +96,41 @@ try:
 except Exception:
     pass
 
-def get_articles(input_url):
+
+def get_articles(base_url, page_number):
     '''
     Get list of articles using the provided url
 
     Args:
-        input_url: a url to be parsed
+        base_url: a base url
+        page_number: page number
 
     Returns:
         articels: list of strings with article data (comma separated)
     '''
-    page = get(input_url)
+    url = '{}/all/page{}'.format(base_url, page_number)
+    print(url)
+    page = get(url)
     dom = pq(page.text)
-    links = dom('.post__title_link')
+    links = dom('a[data-article-link]')
 
-    page_urls = [link.attrib['href'] for link in links]
-    dates = [date.text_content() for date in dom('.post__time')]
-    authors = [auth.text_content() for auth in dom('.user-info__nickname')]
+    page_urls = [base_url + link.attrib['href'] for link in links]
+    dates = [date.text_content() for date in dom('.tm-article-snippet__datetime-published')]
+    authors = [clean_str(auth.text_content()) for auth in dom('.tm-user-info__user')]
     titles = [link.text_content().replace(',', '') for link in links]
     contents = [
-        content.text_content().replace(',', '').replace('\r', ' ').replace('\n', ' ').replace('\s+', ' ').strip()
-        for content in dom('.post__text')
+        clean_str(content.text_content().replace(',', ''))
+        for content in dom('.article-formatted-body')
         ]
 
     result = []
 
     for i in range(0, len(page_urls)):
         url_chunks = page_urls[i].split("/")
-        is_company = url_chunks[3] == 'company'
+        is_company = url_chunks[5] == 'company'
         author = authors[i]
         if is_company:
-            full_author = url_chunks[4] + ' / ' + author
+            full_author = url_chunks[6] + ' / ' + author
         else:
             full_author = author
         if author in bad_authors:
@@ -137,7 +152,7 @@ def get_articles(input_url):
 
 def serialize_article(article_dict):
     '''
-    Serilize article dictionary
+    Serialize article dictionary
 
     Args:
         article_dict: an object
@@ -155,14 +170,11 @@ def serialize_article(article_dict):
 total_articles_loaded = 0
 
 with open(work_dir + out_name, mode='a') as out_file:
-    for raw_url in config['urls']:
+    for base_url in config['urls']:
         page_number = 1
         stop_time_reached = False
-
         while not stop_time_reached:
-            url = '{}page{}'.format(raw_url, page_number)
-            print(url)
-            articles = get_articles(url)
+            articles = get_articles(base_url, page_number)
 
             for article in articles:
                 article_date = date_handler.parse_date(article['date'])
