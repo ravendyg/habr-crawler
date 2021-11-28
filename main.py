@@ -8,11 +8,11 @@ Download and parse lists of articles from habrahabr.ru and alike
 import os
 import argparse
 import json
-import csv
 from datetime import date
 from pyquery import PyQuery as pq
 from requests import get
 import date_handler
+import re
 
 
 def clean_str(str):
@@ -109,9 +109,10 @@ def get_articles(base_url, lang, page_number):
     Returns:
         articels: list of strings with article data (comma separated)
     '''
-    url = '{}/{}/all/page{}'.format(base_url, lang, page_number)
+    url = '{}/{}/all/page{}/'.format(base_url, lang, page_number)
     print(url)
-    page = get(url)
+    # Without these headers article body will be empty!
+    page = get(url, headers={'User-Agent': 'curl/7.68.0', 'Accept': '*/*'})
     dom = pq(page.text)
     links = dom('a[data-article-link]')
 
@@ -145,7 +146,7 @@ def get_articles(base_url, lang, page_number):
             'date': dates[i],
             'author': full_author,
             'title': titles[i],
-            'content': contents[i]
+            'content': contents[i] if len(contents) > i else ''
         })
 
     return result
