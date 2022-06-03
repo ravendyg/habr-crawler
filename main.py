@@ -12,7 +12,6 @@ from datetime import date
 from pyquery import PyQuery as pq
 from requests import get
 import date_handler
-import re
 
 
 def clean_str(str):
@@ -115,10 +114,18 @@ def get_articles(base_url, lang, page_number):
     page = get(url, headers={'User-Agent': 'curl/7.68.0', 'Accept': '*/*'})
     dom = pq(page.text)
     links = dom('a[data-article-link]')
-
     page_urls = [base_url + link.attrib['href'] for link in links]
-    dates = [date.text_content() for date in dom('.tm-article-snippet__datetime-published')]
-    authors = [clean_str(auth.text_content()) for auth in dom('.tm-user-info__user')]
+
+    # Some articels missing author's name.
+    metas = dom('.tm-article-snippet__meta')
+    dates = []
+    authors = []
+    for meta in metas:
+        date = meta.find_class('tm-article-snippet__datetime-published')
+        dates.append(date[0].text_content() if len(date) > 0 else '')
+        author = meta.find_class('tm-user-info__user')
+        authors.append(clean_str(author[0].text_content()) if len(author) > 0 else '<unknown>')
+
     titles = [link.text_content().replace(',', '') for link in links]
     contents = [
         clean_str(content.text_content().replace(',', ''))
