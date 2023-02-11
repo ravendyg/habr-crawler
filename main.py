@@ -96,19 +96,18 @@ except Exception:
     pass
 
 
-def get_articles(base_url, lang, page_number):
+def get_articles(base_url, page_number):
     '''
     Get list of articles using the provided url
 
     Args:
         base_url: a base url
-        lang: language
         page_number: page number
 
     Returns:
         articels: list of strings with article data (comma separated)
     '''
-    url = '{}/{}/all/page{}/'.format(base_url, lang, page_number)
+    url = '{}/ru/all/page{}/'.format(base_url, page_number)
     print(url)
     # Without these headers article body will be empty!
     page = get(url, headers={'User-Agent': 'curl/7.68.0', 'Accept': '*/*'})
@@ -180,21 +179,20 @@ total_articles_loaded = 0
 
 with open(work_dir + out_name, mode='a') as out_file:
     for base_url in config['urls']:
-        for lang in config['languages']:
-            page_number = 1
-            stop_time_reached = False
-            while not stop_time_reached:
-                articles = get_articles(base_url, lang, page_number)
+        page_number = 1
+        stop_time_reached = False
+        while not stop_time_reached:
+            articles = get_articles(base_url, page_number)
 
-                for article in articles:
-                    article_date = date_handler.parse_date(article['date'])
-                    if stop < article_date:
-                        out_file.write('{}\n'.format(serialize_article(article)))
-                        total_articles_loaded += 1
-                    else:
-                        stop_time_reached = True
-                        break
-                page_number += 1
+            for article in articles:
+                article_date = date_handler.parse_date(article['date'])
+                if stop < article_date:
+                    out_file.write('{}\n'.format(serialize_article(article)))
+                    total_articles_loaded += 1
+                else:
+                    stop_time_reached = True
+                    break
+            page_number += 1
 
 print('loaded {} at {}'.format(total_articles_loaded, date_handler.get_next_stop()))
 with open(work_dir + config['last_run_storage'], mode='w') as last_run_file:

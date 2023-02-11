@@ -3,10 +3,6 @@
     "urls": [
         "https://habr.com"
     ],
-    "languages": [
-        "en",
-        "ru"
-    ],
     "last_run_storage": "last_run",
     "max_len": 5,
     "good_authors": "good_authors",
