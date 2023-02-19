@@ -120,9 +120,9 @@ def get_articles(base_url, page_number):
     dates = []
     authors = []
     for meta in metas:
-        date = meta.find_class('tm-article-snippet__datetime-published')
+        date = meta.find_class('tm-article-datetime-published')
         dates.append(date[0].text_content() if len(date) > 0 else '')
-        author = meta.find_class('tm-user-info__user')
+        author = meta.find_class('tm-user-info__username')
         authors.append(clean_str(author[0].text_content()) if len(author) > 0 else '<unknown>')
 
     titles = [link.text_content().replace(',', '') for link in links]
