@@ -115,8 +115,8 @@ def get_articles(base_url, page_number):
     links = dom('a[data-article-link]')
     page_urls = [base_url + link.attrib['href'] for link in links]
 
-    # Some articels missing author's name.
-    metas = dom('.tm-article-snippet__meta')
+    # Some articles missing author's name.
+    metas = dom('.tm-articles-list__item')
     dates = []
     authors = []
     for meta in metas:
@@ -128,7 +128,7 @@ def get_articles(base_url, page_number):
     titles = [link.text_content().replace(',', '') for link in links]
     contents = [
         clean_str(content.text_content().replace(',', ''))
-        for content in dom('.article-formatted-body')
+        for content in dom('.article-snippet>.lead')
         ]
 
     result = []
@@ -137,6 +137,8 @@ def get_articles(base_url, page_number):
         url_chunks = page_urls[i].split("/")
         is_company = url_chunks[5] == 'company'
         author = authors[i]
+        if author[0] == '@':
+            author = author[1:]
         if is_company:
             full_author = url_chunks[6] + ' / ' + author
         else:
