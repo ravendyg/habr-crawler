@@ -116,14 +116,18 @@ def get_articles(base_url, page_number):
     page_urls = [base_url + link.attrib['href'] for link in links]
 
     # Some articles missing author's name.
-    metas = dom('.tm-articles-list__item')
+    metas = dom('.article-snippet')
     dates = []
     authors = []
     for meta in metas:
-        date = meta.find_class('tm-article-datetime-published')
-        dates.append(date[0].text_content() if len(date) > 0 else '')
-        author = meta.find_class('tm-user-info__username')
-        authors.append(clean_str(author[0].text_content()) if len(author) > 0 else '<unknown>')
+        try:
+            time_children = meta.find_class('tm-article-datetime-published')[0].getchildren()
+            date_val = time_children[1].attrib['title']
+            dates.append(date_val.replace(', ', '_'))
+            author = meta.find_class('tm-user-info__username')
+            authors.append(clean_str(author[0].text_content()) if len(author) > 0 else '<unknown>')
+        except Exception:
+            pass
 
     titles = [link.text_content().replace(',', '') for link in links]
     contents = [
